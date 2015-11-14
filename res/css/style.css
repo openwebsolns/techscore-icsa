@@ -988,6 +988,10 @@ div.stat .prefix {
 .tr-carried {
     opacity: 0.5;
 }
+.tr-sailed {
+    opacity: 0.5;
+    background: #ddd;
+}
 .tr-rotation-table td {
     border-right: 0;
     border-left: 0;
