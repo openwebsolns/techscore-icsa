@@ -184,7 +184,6 @@ AutoUpdater.prototype.getFirstParentElement = function(node) {
 };
 
 AutoUpdater.prototype.getElementAge = function(node) {
-    this.debug("Getting age of node " + node.nodeName, 1);
     var match = null;
     for (var i = 0; i < node.classList.length; i++) {
         var classname = node.classList.item(i);
