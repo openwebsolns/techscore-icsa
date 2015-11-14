@@ -37,9 +37,13 @@
         }
 
         // Add toggle button
-        var tog = document.createElement("div");
-        tog.id = "ms-toggle";
-        document.getElementById("page-footer").appendChild(tog);
+        var tog = document.getElementById("ms-toggle");
+        if (tog == null) {
+            tog = document.createElement("div");
+            tog.id = "ms-toggle";
+            document.getElementById("page-footer").appendChild(tog);
+        }
+
         var div = document.createElement("div");
         div.id = "ms-div";
         tog.appendChild(div);

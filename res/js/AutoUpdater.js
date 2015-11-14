@@ -217,15 +217,3 @@ AutoUpdater.prototype.debug = function(message, priority) {
         window.console.log(message);
     }
 };
-
-// Autoload
-(function(w, d) {
-    var opts = {
-        initialInterval : 30000,
-        checkInterval :   30000,
-        ignoreIds : ["social", "ms-screen", "ms-toggle"],
-        debugLevel : 1
-    };
-    new AutoUpdater(opts);
-
-})(window, document);
