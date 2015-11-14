@@ -607,6 +607,13 @@ table.sailors ul {
     list-style-type: none;
 }
 
+table.rotation .scored {
+    opacity: 0.5;
+}
+table.rotation td.scored {
+    background: #c8c8c8;
+}
+
 #announcediv {
     background: none repeat scroll 0 0 #F3EBE0;
     font-size: 0.9em;
