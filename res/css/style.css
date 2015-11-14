@@ -152,6 +152,14 @@ h1 {
     margin: 0 0.5ex;
 }
 
+#fp-wrapper {
+    width: 130px;
+}
+
+#fb-wrapper iframe {
+    top: 0;
+}
+
 .notice {
     border:1px solid orange;
     background:#f3f3bb;
