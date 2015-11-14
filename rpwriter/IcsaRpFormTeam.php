@@ -6,38 +6,8 @@
  */
 
 require_once('rpwriter/AbstractRpForm.php');
-
-/**
- * Stand-in for RP object allows manipulation of race numbers
- *
- * @author Dayan Paez
- * @version 2013-03-15
- */
-class FauxRP extends RP {
-  public $sailor;
-  public $team;
-  public $boat_role;
-  public $division;
-  public $races_nums;
-
-  public function __construct(RP $parent) {
-    $this->sailor = $parent->__get('sailor');
-    $this->team = $parent->__get('team');
-    $this->boat_role = $parent->__get('boat_role');
-    $this->division = $parent->__get('division');
-    $this->races_nums = $parent->__get('races_nums');
-  }
-  public function getSailorName() {
-    if ($this->sailor === null)
-      return "No show";
-    return $this->sailor->getName();
-  }
-  public function getSailorYear() {
-    if ($this->sailor === null)
-      return "----";
-    return $this->sailor->year;
-  }
-}
+require_once('rpwriter/RpBlock.php');
+require_once('rpwriter/LatexPic.php');
 
 /**
  * Draws RP forms for team racing regatta
@@ -47,63 +17,88 @@ class FauxRP extends RP {
  */
 class IcsaRpFormTeam extends AbstractRpForm {
 
-  private $regatta;
+  const BLOCKS_PER_PAGE = 2;
 
-  /**
-   * @var Map of RP indexed <teamID>-<role>-<sailorID> meant to ascertain
-   * only one sailor appears per team, regardless of boat, or division
-   */
-  private $team_sailor_map;
+  protected $HEAD = '\documentclass[letter,12pt]{article} \usepackage{graphicx} \usepackage[text={8.25in,11in},centering]{geometry} \usepackage[usenames]{color} \begin{document} \sffamily\color{blue} \setlength{\unitlength}{1in} \pagestyle{empty}';
+  protected $TAIL = '\end{document}';
 
-  /**
-   * Creates a new form for two team racing
-   *
-   * @param FullRegatta $reg the regatta in question
-   * @param String $host the host of the regatta
-   * @param String $date the date of the regatta
-   */
-  public function __construct(FullRegatta $reg, $host, $date) {
-    parent::__construct($reg->name, $host, $date, 2, 5, 6);
-    $this->regatta = $reg;
-    $this->team_sailor_map = array();
+  public function makePdf(FullRegatta $reg, $tmpbase = 'ts2') {
+    $body = sprintf("%s %s %s", 
+                    str_replace('#', '\#', $this->HEAD), 
+                    str_replace('#', '\#', $this->draw($reg, $this->createBlocks($reg))),
+                    str_replace('#', '\#', $this->TAIL));
+
+    // generate PDF
+    $tmp = sys_get_temp_dir();
+    $filename = tempnam($tmp, $tmpbase);
+    $command = sprintf("pdflatex -output-directory='%s' -interaction=nonstopmode -jobname='%s' %s",
+                       escapeshellarg($tmp),
+                       escapeshellarg(basename($filename)),
+                       escapeshellarg($body));
+    $output = array();
+    exec($command, $output, $value);
+    if ($value != 0) {
+      throw new RuntimeException(sprintf("Unable to generate PDF file. Exit code $value:\nValue: %s\nOutput%s",
+                                         $value, implode("\n", $output)));
+    }
+
+    // clean up (including base created by tempnam call (last in list)
+    foreach (array('.aux', '.log', '') as $suffix)
+      unlink(sprintf('%s%s', $filename, $suffix));
+    return sprintf('%s.pdf', $filename);
   }
 
-  public function append(RP $rp) {
-    // Cheat by merging different divisions or boats into one RP, and
-    // use only "skipper_A" and "crew_A"
-    $team = $rp->team;
-    $role = $rp->boat_role; // either "skipper" or "crew"
-    if (!isset($this->teams[$team->id]))
-      $this->add($team);
+  protected function createBlocks(FullRegatta $reg) {
+    $blocks = array();
 
-    $id = sprintf('%s-%s-%s', $team->id, $role, ($rp->sailor) ? $rp->sailor->id : 'NULL');
-    if (isset($this->team_sailor_map[$id])) {
-      $prevRP = $this->team_sailor_map[$id];
-      foreach ($rp->races_nums as $num)
-        $prevRP->races_nums[] = $num;
-      $prevRP->races_nums = array_unique($prevRP->races_nums);
-      sort($prevRP->races_nums, SORT_NUMERIC);
-      return;
+    $divisions = $reg->getDivisions();
+    $rp = $reg->getRpManager();
+
+    foreach ($reg->getTeams() as $team) {
+      $representative = $rp->getRepresentative($team);
+
+      // It may be necessary to use multiple RP blocks per team, due to
+      // the fact that the number of skippers or crews exceeds the
+      // allowed value for that field per block.
+      $team_blocks = array();
+
+      foreach (array(RP::SKIPPER, RP::CREW) as $role) {
+        $limit = ($role == RP::SKIPPER) ? 5 : 6;
+        $section = $role . '_A';
+        foreach ($divisions as $div) {
+          foreach ($rp->getRP($team, $div, $role) as $r) {
+
+            // Find block to use
+            $block = null;
+            foreach ($team_blocks as $bl) {
+              if (count($bl->$section) < $limit) {
+                $block = $bl;
+                break;
+              }
+            }
+            if ($block === null) {
+              $block = new RpBlock();
+              $block->team = $team;
+              $block->representative = $representative;
+              $blocks[] = $block;
+              $team_blocks[] = $block;
+            }
+
+            array_push($block->$section, $r);
+          }
+        }
+      }
+
+      // Add an articifial block if none available for the team
+      if (count($team_blocks) == 0) {
+        $block = new RpBlock();
+        $block->team = $team;
+        $block->representative = $representative;
+        $blocks[] = $block;
+      }
     }
 
-    $rp = new FauxRP($rp);
-
-    // determine whether a new block is necessary
-    $var_name  = sprintf("%s_%s",  $role, Division::A());
-    $var_count = sprintf("num_%s", $var_name);
-
-    // get block, and create a new if necessary
-    $list  = $this->$var_name;
-    $block = $this->blocks[$team->id][$list[$team->id]];
-    if (count($block->$var_name) == $this->$var_count) {
-      $block = new RpBlock();
-      $this->blocks[$team->id][] = $block;
-      $list[$team->id]++;
-      $this->$var_name = $list;
-    }
-
-    array_push($block->$var_name, $rp);
-    $this->team_sailor_map[$id] = $rp;
+    return $blocks;
   }
 
   /**
@@ -111,82 +106,84 @@ class IcsaRpFormTeam extends AbstractRpForm {
    *
    * @return String the LaTeX code
    */
-  protected function getBody() {
+  protected function draw(FullRegatta $reg, Array $blocks) {
+    $host = array();
+    foreach ($reg->getHosts() as $school)
+      $host[$school->id] = $school->nick_name;
+    $host = implode("/", $host);
+
     $pics = array();
     $within_page = 0;
     $fmt = '\put(%0.2f, %0.2f){%s}';
-    foreach ($this->blocks as $id => $list) {
-      foreach ($list as $num => $block) {
-        if ($within_page == 0) {
-          $pc = new LatexPic(-0.25, 0);
-          $pc->add(sprintf('\put(7.05, 10.33){\thepage} ' .
-                           '\put(7.50, 10.33){**num_pages**} ' .
-                           '\put(1.75,  9.98){%s} ' .
-                           '\put(4.25,  9.98){%s} ' .
-                           '\put(6.55,  9.98){%s} ',
-                           $this->regatta_name,
-                           $this->host,
-                           $this->date));
-          $pics[] = $pc;
-        }
-
-        // - team and representative
-        $team = $this->teams[$id];
-        $name = sprintf("%s %s", $team->school->nick_name, $team->name);
-        if ($num > 0)
-          $name .= sprintf(" (%d)", $num + 1);
-        $team_X = 1.25;
-        $team_Y = 9.65 - 4.48 * $within_page;
-        $pc->add(sprintf($fmt, $team_X, $team_Y, $name));
-        $pc->add(sprintf($fmt, $team_X + 4.6, $team_Y,
-                         $this->representatives[$id]));
-
-        $teamRaces = $this->regatta->getRacesForTeam(Division::A(), $team);
-
-        // - write content: skippers across all divisions
-        $X = 0.75;
-        $Y = 8.65 - 4.48 * $within_page;
-        // :A then :B then :C, first column, then second
-        $skipIndex = 0;
-        foreach (array("skipper_A", "skipper_B", "skipper_C") as $div_num => $div) {
-          foreach ($block->$div as $s) {
-            $y = $Y - (0.3 * $skipIndex);
-            $skipIndex++;
-
-            $year = substr($s->getSailorYear(), 2);
-            if (count($s->races_nums) == count($teamRaces))
-              $races = "All";
-            else
-              $races = DB::makeRange($s->races_nums);
-            $pc->add(sprintf($fmt, $X,        $y, $s->getSailorName()));
-            $pc->add(sprintf($fmt, $X + 3.0,  $y, $year));
-            $pc->add(sprintf($fmt, $X + 3.4, $y, $races));
-          }
-        }
-
-        // crews
-        $X = 0.75;
-        $Y = 7.15 - 4.48 * $within_page;
-        $crewIndex = 0;
-        foreach (array("crew_A", "crew_B", "crew_C") as $div_num => $div) {
-          foreach ($block->$div as $s) {
-            $y = $Y - (0.3 * $crewIndex);
-            $crewIndex++;
-
-            $year = substr($s->getSailorYear(), 2);
-            if (count($s->races_nums) == count($teamRaces))
-              $races = "All";
-            else
-              $races = DB::makeRange($s->races_nums);
-            $pc->add(sprintf($fmt, $X,        $y, $s->getSailorName()));
-            $pc->add(sprintf($fmt, $X + 3.0,  $y, $year));
-            $pc->add(sprintf($fmt, $X + 3.4, $y, $races));
-          }
-        }
-
-        // - update within page
-        $within_page = ($within_page + 1) % $this->blocks_per_page;
+    $blocks_per_team = array();
+    foreach ($blocks as $block) {
+      if ($within_page == 0) {
+        $pc = new LatexPic(-0.25, 0);
+        $pc->add(sprintf('\put(7.05, 10.33){\thepage} ' .
+                         '\put(7.50, 10.33){**num_pages**} ' .
+                         '\put(1.75,  9.98){%s} ' .
+                         '\put(4.25,  9.98){%s} ' .
+                         '\put(6.55,  9.98){%s} ',
+                         $reg->name,
+                         $host,
+                         $reg->start_time->format('Y-m-d')));
+        $pics[] = $pc;
       }
+
+      if (!isset($blocks_per_team[$block->team->id]))
+        $blocks_per_team[$block->team->id] = 0;
+      $blocks_per_team[$block->team->id]++;
+
+      // - team and representative
+      $name = sprintf("%s %s", $block->team->school->nick_name, $block->team->name);
+      if ($blocks_per_team[$block->team->id] > 1)
+        $name .= sprintf(" (%d)", $blocks_per_team[$block->team->id]);
+      $team_X = 1.25;
+      $team_Y = 9.65 - 4.48 * $within_page;
+      $pc->add(sprintf($fmt, $team_X, $team_Y, $name));
+      $pc->add(sprintf($fmt, $team_X + 4.6, $team_Y, $block->representative));
+
+      $teamRaces = $reg->getRacesForTeam(Division::A(), $block->team);
+
+      // - write content: skippers across all divisions
+      $X = 0.75;
+      $Y = 8.65 - 4.48 * $within_page;
+      // :A then :B then :C, first column, then second
+      $skipIndex = 0;
+      foreach ($block->skipper_A as $s) {
+        $y = $Y - (0.3 * $skipIndex);
+        $skipIndex++;
+
+        $year = substr($s->getSailorYear(), 2);
+        if (count($s->races_nums) == count($teamRaces))
+          $races = "All";
+        else
+          $races = DB::makeRange($s->races_nums);
+        $pc->add(sprintf($fmt, $X,        $y, $s->getSailorName()));
+        $pc->add(sprintf($fmt, $X + 3.0,  $y, $year));
+        $pc->add(sprintf($fmt, $X + 3.4, $y, $races));
+      }
+
+      // crews
+      $X = 0.75;
+      $Y = 7.15 - 4.48 * $within_page;
+      $crewIndex = 0;
+      foreach ($block->crew_A as $s) {
+        $y = $Y - (0.3 * $crewIndex);
+        $crewIndex++;
+
+        $year = substr($s->getSailorYear(), 2);
+        if (count($s->races_nums) == count($teamRaces))
+          $races = "All";
+        else
+          $races = DB::makeRange($s->races_nums);
+        $pc->add(sprintf($fmt, $X,        $y, $s->getSailorName()));
+        $pc->add(sprintf($fmt, $X + 3.0,  $y, $year));
+        $pc->add(sprintf($fmt, $X + 3.4, $y, $races));
+      }
+
+      // - update within page
+      $within_page = ($within_page + 1) % self::BLOCKS_PER_PAGE;
     } // end of blocks
 
     $inc = $this->getIncludeGraphics();
@@ -197,6 +194,10 @@ class IcsaRpFormTeam extends AbstractRpForm {
     $body = implode('\clearpage ', $pages);
     $body = str_replace("**num_pages**", count($pages), $body);
     return str_replace("&", "\&", $body);
+  }
+
+  protected function getIncludeGraphics() {
+    return sprintf('\includegraphics[width=\textwidth]{%s}', $this->getPdfName());
   }
 
   public function getPdfName() {
