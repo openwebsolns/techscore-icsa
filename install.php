@@ -84,6 +84,7 @@ class Session {
   }
 }
 
+$options = array();
 $_FILES = array();
 $_FILES['file'] = array(
   'name' => array(),
@@ -104,6 +105,13 @@ foreach (scandir(__DIR__ . '/res') as $dir) {
           $_FILES['file']['error'][] = 0;
           $_FILES['file']['size'][] = filesize($filename);
           $_FILES['file']['type'][] = null;
+
+          if ($dir == 'js-async') {
+            $options[$file] = 'auto-async';
+          }
+          if ($dir == 'js-sync') {
+            $options[$file] = 'auto-sync';
+          }
         }
       }
     }
@@ -126,6 +134,16 @@ try {
       'delete' => $toDelete,
     )
   );
+
+  if (count($options) > 0) {
+    $_FILES = array();
+    $P->process(
+      array(
+        'upload' => "Techscore-ICSA",
+        'options' => $options,
+      )
+    );
+  }
 }
 catch (PermissionException $e) {
   usage($e->getMessage());
