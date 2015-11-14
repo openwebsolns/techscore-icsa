@@ -755,6 +755,56 @@ div.stat .prefix {
     width: auto;
 }
 
+/* Roster summary table */
+.roster-table tbody {
+    border: none;
+    text-align: center;
+}
+.roster-table thead {
+    display: none;
+}
+.roster-table tr {
+    display: inline-block;
+    zoom: 1;
+    *display: inline;
+    width: 15em;
+    margin: 0.5em 1%;
+    position: relative;
+    overflow: hidden;
+    border: 1px solid #aaa;
+    border-radius: 0.5em;
+    -moz-border-radius: 0.5em;
+    -webkit-border-radius: 0.5em;
+    vertical-align: top;
+    height: 6em;
+    text-align: right;
+    box-shadow: inset 0 -3px 5px #ccc;
+}
+.roster-table tr:hover {
+    box-shadow: inset 0 -3px 5px #aaa;
+}
+.roster-table td {
+    border: none;
+    display: inline-block;
+    zoom: 1;
+    *display: inline;
+}
+.roster-table .sailor-name {
+    font-weight: bold;
+    text-align: right;
+    display: block;
+}
+.roster-table .burgeecell {
+    position: absolute;
+    bottom: 0;
+    left: 0.5em;
+}
+
+.roster-table img {
+    height: 40px;
+    width: auto;
+}
+
 /* Submenu */
 #submenu-wrapper {
     border-top: 1px solid #ddd;
