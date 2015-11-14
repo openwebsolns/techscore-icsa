@@ -43,9 +43,14 @@ class IcsaRpFormTeam extends AbstractRpForm {
     }
 
     // clean up (including base created by tempnam call (last in list)
-    foreach (array('.aux', '.log', '') as $suffix)
+    $data = file_get_contents($filename . '.pdf');
+    foreach (array('.aux', '.log', '.pdf', '') as $suffix)
       unlink(sprintf('%s%s', $filename, $suffix));
-    return sprintf('%s.pdf', $filename);
+    return $data;
+  }
+
+  public function socketPdf(FullRegatta $reg, $socket) {
+    return null;
   }
 
   protected function createBlocks(FullRegatta $reg) {
