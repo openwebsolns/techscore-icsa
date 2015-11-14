@@ -221,6 +221,48 @@ body {
 }
 }
 
+.notice-races {
+    margin-bottom: 1em;
+    margin-top: -1em;
+}
+
+.notice-races h5 {
+    margin: 0.25em 0;
+    display: inline-block;
+}
+
+.notice-races h5:after {
+    content: ":";
+    font-weight: bold;
+}
+
+.notice-races-list {
+    display: inline;
+    list-style-type: none;
+    margin-left: 0;
+    padding-left: 0;
+    font-size: 90%;
+}
+
+.notice-races-list > li {
+    display: inline;
+    margin-left: 0.5em;
+}
+
+.notice-races-list > li:after {
+    content: ",";
+}
+
+.notice-races-list > li:last-child:after {
+    content: "";
+}
+
+.notice-division {
+    font-variant: small-caps;
+}
+
+
+
 #menu li {
     font-family: Arial,Helvetica,sans-serif;
     text-transform: uppercase;
@@ -917,6 +959,10 @@ td.tr-sail {
     margin-right: 0.5em;
 }
 
+.paypal-donate-form {
+    display: inline-block;
+}
+
 .gsc-control-cse table tbody, .gsc-control-cse td {
     border: none;
     padding: 0;
@@ -1027,7 +1073,7 @@ td.tr-sail {
         display: table-cell;
         height: 20px;
         text-align: center;
-        width: 10ex;
+        width: 18ex;
     }
 
     #search-wrapper {
@@ -1138,15 +1184,20 @@ td.tr-sail {
 }
 
 .coming-regattas tr {
+    border: 1px solid #CCCCCC;
+    border-radius: 3px;
+    box-shadow: 0 -1px 3px 3px #888888 inset;
     display: inline-block;
-    width: 20ex;
-    vertical-align: top;
     font-size: 95%;
-    padding: 0.5ex;
+    margin: 0.5ex;
+    padding: 0;
+    vertical-align: top;
+    width: 20ex;
 }
 
 .coming-regattas a {
     padding: 0;
+    text-decoration: none;
 }
 
 #in-progress table {
@@ -1154,11 +1205,19 @@ td.tr-sail {
 }
 
 #in-progress tr {
+    background: none repeat scroll 0 0 rgba(255, 255, 255, 0.3);
     border-bottom: medium none;
+    border-radius: 3px;
+    border: 1px solid white;
     display: inline-block;
+    margin: 5px;
     min-width: 20ex;
     vertical-align: top;
     width: 48%;
+}
+
+#in-progress a {
+    text-decoration: none;
 }
 
 #in-progress tr td:first-child {
