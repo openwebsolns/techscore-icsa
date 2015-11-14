@@ -94,10 +94,12 @@ svg {
 }
 
 .sp-block {
-    float: right;
     height: 3em;
     margin-bottom: 0.75em;
-    margin-top: -3em;
+    margin-top: 0.75em;
+    position: absolute;
+    top:0;
+    right:0;
 }
 
 .sp-block * {
@@ -488,6 +490,7 @@ address a {
     display: table;
     margin: auto;
     padding: 0 1ex;
+    position: relative;
 }
 
 .port p {
