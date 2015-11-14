@@ -43,5 +43,5 @@ window.addEventListener("load", function(e) {
         }
     }
 
-    initFullLink();
+    //initFullLink();
 }, false);

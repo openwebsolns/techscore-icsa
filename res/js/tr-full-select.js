@@ -53,6 +53,18 @@ window.addEventListener('load', function(e) {
     }
 
     function initFullSelect() {
+        var linkRoot = "";
+        var menu = document.getElementById("menu");
+        if (menu) {
+            var hrefs = menu.getElementsByTagName("a");
+            for (var i = 0; i < hrefs.length; i++) {
+                if (hrefs[i].getAttribute("itemprop") == "url") {
+                    linkRoot = hrefs[i].getAttribute("href") + "full-scores/";
+                    break;
+                }
+            }
+        }
+
         var tables = document.getElementsByTagName("table");
         for (var t = 0; t < tables.length; t++) {
             var r, n, c, href;
@@ -76,7 +88,7 @@ window.addEventListener('load', function(e) {
                     p = document.createElement("p");
                     table.parentNode.insertBefore(p, table);
                 }
-                var st = document.createElement("strong");
+                var st = document.createElement("em");
                 p.appendChild(st);
                 st.appendChild(document.createTextNode(" Tip: click on team's record to toggle filter."));
 
@@ -90,7 +102,7 @@ window.addEventListener('load', function(e) {
 
                         c = rows[r].childNodes[5];
                         href = document.createElement("a");
-                        href.setAttribute("href", "#" + n);
+                        href.setAttribute("href", linkRoot + "#" + n);
                         href.setAttribute("title", "Click to filter list");
                         href.onclick = funcFactory(n);
                         while (c.childNodes.length > 0)
@@ -112,7 +124,7 @@ window.addEventListener('load', function(e) {
 
                         c = row.childNodes[1];
                         href = document.createElement("a");
-                        href.setAttribute("href", "#" + n);
+                        href.setAttribute("href", linkRoot + "#" + n);
                         href.setAttribute("title", "Click to filter list");
                         href.onclick = funcFactory(n);
                         while (c.childNodes.length > 0)
