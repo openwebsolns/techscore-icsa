@@ -5,7 +5,7 @@
         checkInterval :   30000,
         ignoreIds : ["social", "ms-screen", "ms-toggle"],
         ignoreTagNames : ["head"],
-        debugLevel : 1
+        debugLevel : 0
     };
     var load = function() {
         new AutoUpdater(opts);
