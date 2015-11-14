@@ -110,10 +110,22 @@ foreach (scandir(__DIR__ . '/res') as $dir) {
   }
 }
 
+$toDelete = array();
+if (count($filenames) == 0) {
+  foreach (DB::getAll(DB::T(DB::PUB_FILE_SUMMARY)) as $file) {
+    $toDelete[] = $file->id;
+  }
+}
+
 require_once('users/admin/PublicFilesManagement.php');
 try {
   $P = new PublicFilesManagement($user);
-  $P->process(array('upload' => "Techscore-ICSA"));
+  $P->process(
+    array(
+      'upload' => "Techscore-ICSA",
+      'delete' => $toDelete,
+    )
+  );
 }
 catch (PermissionException $e) {
   usage($e->getMessage());
