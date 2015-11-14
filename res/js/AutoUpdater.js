@@ -1,6 +1,18 @@
 /**
  * Show what's changed on a page, via classnames.
  *
+ * @param Map options set of options to tweak the updater:
+ *
+ *   - initialInterval : millis after loading to first check
+ *   - checkInterval   : millis in between subsequent checks
+ *   - steps : number of ages to cycle through (1 to steps)
+ *   - classname: name to use for changed elements.
+ *                The age is attached as "-<age>".
+ *   - ignoreIds: list of object IDs to never check/replace.
+ *   - ignoreTagNames: list of lowercase tag names to ignore.
+ *
+ *   - debugLevel: report (to the console) for debugging.
+ * 
  * @author Dayan Paez, OpenWeb Solutions, LLC
  * @version 2015-11-07
  */
@@ -11,6 +23,7 @@ function AutoUpdater(options) {
         steps : 10,
         classname : "AutoUpdated",
         ignoreIds : [],
+        ignoreTagNames : [],
         debugLevel : 0
     };
     for (var option in options) {
@@ -53,7 +66,7 @@ AutoUpdater.prototype.runUpdate = function() {
 };
 
 AutoUpdater.prototype.diffPage = function(newPage) {
-    this.diffSubtrees(document.body, newPage.body);
+    this.diffSubtrees(document.firstElementChild, newPage.firstElementChild);
 };
 
 /**
@@ -130,13 +143,19 @@ AutoUpdater.prototype.diffSubtrees = function(myNode, theirNode) {
         return;
     }
 
+    // Ignore tagnames
+    if (this.options.ignoreTagNames.indexOf(myNode.nodeName.toLowerCase()) >= 0) {
+        this.debug("Ignoring TAG=" + myNode.nodeName);
+        return;
+    }
+
     // Ignore IDs
-    this.debug("Comparing element " + myNode.nodeName, 2);
     if (this.options.ignoreIds.indexOf(myNode.id) >= 0) {
         this.debug("Ignoring ID=" + myNode.id);
         return;
     }
 
+    this.debug("Comparing element " + myNode.nodeName, 2);
     // Compare attributes
     if (!this.haveSameAttributes(myNode, theirNode)) {
         this.replaceNode(myNode, theirNode);
