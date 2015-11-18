@@ -85,8 +85,8 @@ class Session {
 }
 
 $options = array();
-$_FILES = array();
-$_FILES['file'] = array(
+$POST = array();
+$POST['file'] = array(
   'name' => array(),
   'tmp_name' => array(),
   'error' => array(),
@@ -100,11 +100,11 @@ foreach (scandir(__DIR__ . '/res') as $dir) {
       if ($file != '.' && $file != '..') {
         if (count($filenames) == 0 || in_array($file, $filenames)) {
           $filename = $dirname . '/' . $file;
-          $_FILES['file']['name'][] = $file;
-          $_FILES['file']['tmp_name'][] = $filename;
-          $_FILES['file']['error'][] = 0;
-          $_FILES['file']['size'][] = filesize($filename);
-          $_FILES['file']['type'][] = null;
+          $POST['file']['name'][] = $file;
+          $POST['file']['tmp_name'][] = $filename;
+          $POST['file']['error'][] = 0;
+          $POST['file']['size'][] = filesize($filename);
+          $POST['file']['type'][] = null;
 
           if ($dir == 'js-async') {
             $options[$file] = 'auto-async';
@@ -127,16 +127,12 @@ if (count($filenames) == 0) {
 
 require_once('users/admin/PublicFilesManagement.php');
 try {
+  $POST['upload'] = "Techscore-ICSA";
+  $POST['delete'] = $toDelete;
   $P = new PublicFilesManagement($user);
-  $P->process(
-    array(
-      'upload' => "Techscore-ICSA",
-      'delete' => $toDelete,
-    )
-  );
+  $P->process($POST);
 
   if (count($options) > 0) {
-    $_FILES = array();
     $P->process(
       array(
         'upload' => "Techscore-ICSA",
