@@ -36,7 +36,6 @@ body {
     height: 100%;
     margin: 0 auto;
     font-family: "Lucida Grande",Tahoma,Verdana,sans-serif;
-    font-family: Georgia,Tahoma,sans-serif;
     line-height: 1.25em;
     padding: 0;
 }
@@ -1035,6 +1034,14 @@ td.tr-sail {
     background: #ccc;
 }
 
+.penalty-table td {
+    border-right: none;
+    border-left: none;
+    text-align: left;
+    padding-right: 1em;
+    padding-left: 1em;
+}
+
 #top-wrapper {
     display: table;
     width: 60em;
@@ -1097,12 +1104,16 @@ td.tr-sail {
 @media screen and (max-width:799px) {
     html {
         background: none;
-        font-size: 14pt;
+        font-size: 11pt;
     }
 
     body {
         background: none;
         display: block;
+    }
+
+    a {
+        text-decoration: none;
     }
 
     #last_updated {
@@ -1114,7 +1125,7 @@ td.tr-sail {
     }
 
     #menu {
-        font-size: 11pt;
+        font-size: 10pt;
         display: block;
         max-width: 100%;
         padding: 0;
@@ -1245,10 +1256,12 @@ td.tr-sail {
 }
 .season-summary tr.row0, .season-summary tr.row1,
 .participation-table tr.row0, .participation-table tr.row1 {
-    margin-top: 0;
+    margin: 0.25em;
     display: inline-block;
     width: 25ex;
     vertical-align: top;
+    border: 1px solid #ccc;
+    border-radius: 0.25em;
 }
 .season-summary td, .participation-table td {
     display: block;
@@ -1356,21 +1369,6 @@ td.tr-sail {
 }
 #page-info td#social-wrapper {
     padding-top: 0.5em;
-}
-.season-page #page-info, .school-page #page-info, .school-summary-page #page-info {
-    display: none;
-}
-.season-page #content-header,
-.school-page #content-header,
-.school-summary-page #content-header {
-    background: none;
-    border: none;
-}
-.season-page #content-header h1,
-.school-page #content-header h1,
-.school-summary-page #content-header h1 {
-    position: static;
-    top: 0;
 }
 .season-page #page-content,
 .school-page #page-content,
@@ -1515,6 +1513,7 @@ thead {
 #ms-toggle {
     background: #ddd none repeat scroll 0 0;
     padding: 5px;
+    text-align: right;
 }
 
 #ms-button-label {
