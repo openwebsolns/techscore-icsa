@@ -27,7 +27,12 @@
             request.responseType = 'document';
             request.onload = () => {
                 if (request.status === 200) {
-                    resolve(JSON.parse(request.response.documentElement.querySelector('meta[name="ts:data"]').content));
+                    const meta = request.response.documentElement.querySelector('meta[name="ts:data"]');
+                    if (!meta) {
+                        reject('No metadata found for school');
+                    } else {
+                        resolve(JSON.parse(meta.content));
+                    }
                 } else {
                     reject('Unable to get school');
                 }
@@ -107,7 +112,8 @@
             addStylesheet();
             getSchool(sailor.school.substring('url:'.length)).then((school) => {
                 createButton(generateUrl(sailor, school));
-            }, () => {
+            }, (error) => {
+                console.warn(error);
                 createButton(generateUrl(sailor, { id: '' }));
             });
         }
