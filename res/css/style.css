@@ -833,21 +833,24 @@ div.stat .prefix {
 }
 #other-seasons {
     list-style-type: none;
-    display: table;
+    display: block;
     max-width: 60em;
     margin: 0 auto;
     padding: 0;
 }
 #other-seasons li {
     text-align: center;
-    display: table-cell;
+    display: inline-block;
     border-right: 1px solid #ddd;
-    padding: 0 1em;
+    padding: 1em;
     font-family: Arial,Helvetica,sans-serif;
     font-size: 0.7em;
     letter-spacing: 0.1em;
     text-transform: uppercase;
     font-weight: bold;
+    vertical-align: middle;
+    width: 5em;
+    height: 3em;
 }
 #other-seasons li:last-child {
     border-right: none;
@@ -1226,6 +1229,7 @@ td.tr-sail {
 
     #other-seasons li {
         display: inline-block;
+	width: 8em;
     }
 
     #other-seasons a {
